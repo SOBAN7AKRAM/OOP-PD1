@@ -1,706 +1,705 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EZInput;
 
-namespace application
+namespace Game
 {
     class Program
     {
-        static string[] userName = new string[100];
-        static string[] userPasswords = new string[100];
-        static string[] userRole = new string[100];
-        static string[] bookNameFree = new string[100];
-        static string[] bookCategoryFree = new string[100];
-        static string[] bookNamePaid = new string[100];
-        static string[] bookCategoryPaid = new string[100];
-        static int[] bookPrice = new int[100];
-        static string[] authorFree = new string[100];
-        static string[] authorPaid = new string[100];
-        static int userCount = 0,bookCount=0,fbx=0,pbx=0,del=-1,del1=-1,up=-1,up1=-1;
+        // variables for counting score,player and enemy health etc
+        static int score = 0, count = 15, horizontalCount = 15, followCount = 20, playerhealth = 30, VEH = 15, HEH = 15, FEH = 20;
+        static int bulletCount = 0, bulletCountV = 0, bulletCountH = 0;
+        // variable for moving ghost 
+        static string direction = "down";
+        static string horizontalDirection = "left";
+        static string followStatus = "isAlive";
+        static char[,] array = new char[,]
+        {
+            {'%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','%'},
+            {'%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%','%'} 
+        };
 
         static void Main(string[] args)
         {
-            int option=5;
-            string name, password, role;
-            string freeName, freeCategory,paidName,paidCategory,price;
-            int authorOption=6;
-            readUserData();
-            readFreeBooksDetail();
-            readPaidBooksDetail();
-            while (option!=0)
+            //variables to positioning player on console
+            int px = 12, py = 16;
+            //variables to positioning enemies on console
+            int vgx = 68, vgy = 8, hgx = 10, hgy = 22, fgx = 56, fgy = 6;
+            //variables to slow down the speed of ghost and timerB for bullet
+            int timerV = 2, timerH = 2, timerF = 2, timerB = 2;
+
+            //to store answer from detect collission function
+            bool result;
+
+            //arrays to store bullet
+            int[] bulletX = new int[10000];
+            int[] bulletY = new int[10000];
+            int[] bulletVY = new int[10000];
+            int[] bulletVX = new int[10000];
+            int[] bulletHX = new int[10000];
+            int[] bulletHY = new int[10000];
+
+            //arrays to store active bullet
+            bool[] isBulletActive = new bool[10000];
+            bool[] isBulletActiveVertical = new bool[10000];
+            bool[] isBulletActiveHorizontal = new bool[10000];
+
+            // variables to print character used in printing player and enemy
+
+            char p = (char)148;
+            char l = (char)240;
+            char g = (char)219;
+            char a = (char)162;
+            char b = (char)229;
+
+            //2D array to print player
+            char[,] player = new char[,]
             {
-                Console.Clear();
-                header();
-                option = loginMenu();
-                if (option == 1)
+                { ' ', p, ' ' },
+                { '(', l, ')' },
+                { '/', ' ', '\\' }
+             };
+            //2D array to print vertical ghost
+            char[,] verticalGhost = new char[,]
                 {
-                    Console.Clear();
-                    header();
-                    Console.WriteLine("SIGN-IN MENU");
-                    Console.WriteLine("-------------------");
-                    Console.WriteLine("Enter Your Name:");
-                    name = Console.ReadLine();
-                    Console.WriteLine("Enter Your Password:");
-                    password = Console.ReadLine();
-                    string rolechecker = signIn(name, password);
-                    if (rolechecker == "reader" || rolechecker == "Reader" || rolechecker == "READER")
+                   { ' ','@',' '},
+                   { '(',g,')'},
+                   { '/',' ','\\'}
+                };
+            //2D array to print horizontal ghost 
+            char[,] horizontalGhost = new char[,]
+                {
+                   { ' ',a,' '},
+                   { '{',g,'}'},
+                   { '<',' ','>'}
+                };
+            //2D array to print follow ghost
+            char[,] followGhost = new char[,]
+                {
+                   { ' ',b,' '},
+                   { '[',g,']'},
+                   { '=',' ','='}
+                };
+
+            //calling function to print logo and opening menu
+
+            Console.Clear();
+            logo();
+            loading();
+            Console.Clear();
+            loginMenuHeader();
+            Console.WriteLine("\n\n\n");
+            menu();
+            //variables to store users option for main menu and optional menu
+            int option, keyoption, choice = 3;
+            bool gamerunning = true;
+            while (gamerunning)
+            {
+                Console.WriteLine("Enter Your Option:");
+                option = int.Parse(Console.ReadLine());
+                if (option == 1 || option == 2)
+                {
+                    if (option == 2)
                     {
-                        Console.WriteLine("Signed-Up successfully READER");
-                        Console.WriteLine("Press any key to continue:");
-                        Console.ReadKey();
+                        // calling function to read data from file
+                       //readData(px, py, fgx, fgy, vgx, vgy, hgx, hgy);
+                       //readBullet(bulletX, bulletY, bulletVX, bulletVY, bulletHX, bulletHY);
+                       //option = 1;
                     }
-                    else if (rolechecker == "author" || rolechecker == "Author" || rolechecker == "AUTHOR")
+                    //calling function to start the game
+                    Console.Clear();
+                     printMaze();
+                     printPlayer(player,ref px,ref py);
+                     printVerticalGhost(verticalGhost,ref vgx,ref vgy);
+                    // printHorizontalGhost(horizontalGhost, hgx, hgy);
+                    // printFollowGhost(followGhost, fgx, fgy);
+                    //loop for game running
+                    while(true)
                     {
-                        Console.WriteLine("Signed-Up successfully Author");
-                        Console.WriteLine("Press any key to continue:");
-                        Console.ReadKey();
-                        while(authorOption!=0)
+                        //functions to print health and score
+                        playerHealth();
+                        printScore();
+                        verticalEnemyHealth();
+                        //followEnemyHealth();
+                        //horizontalEnemyHealth();
+                        //result = detectCollision(px, py, fgx, fgy);
+                        //condition to check wheter player is die or won the game
+                        //if (playerhealth <= 0 || result == true || score >= 50)
+                        //{
+                        //    system("cls");
+                        //    if (playerhealth <= 0 || result == true)
+                        //    {
+                        //        YouDie();
+                        //        Sleep(1000);
+                        //    }
+                        //    else if (score >= 50)
+                        //    {
+                        //        YouWon();
+                        //        Sleep(1000);
+                        //    }
+                        //
+                        //    system("cls");
+                        //    loginMenuHeader();
+                        //    cout << endl << endl << endl;
+                        //    menu();
+                        //initializing variables to initial values so that new game will start 
+                        // playerhealth = 30;
+                        // score = 0;
+                        // fgx = 56, fgy = 6;
+                        // px = 12, py = 16;
+                        // vgx = 68, vgy = 8, hgx = 10, hgy = 22,count = 15,horizontalCount = 15,followCount = 20,VEH = 15,HEH = 15,FEH = 20,timerV = 2,timerH = 2,timerF = 2,timerB = 2;
+                        // followStatus = "isAlive";
+                        // break;
+                        //}
+                        //read keys from console to move player
+                        if (Keyboard.IsKeyPressed(Key.RightArrow))
                         {
-                            Console.Clear();
-                            header();
-                            authorOption = authorMenu();
-                            if (authorOption==1)
+                            moveright(player,ref px,ref py);
+                        }
+                        if (Keyboard.IsKeyPressed(Key.LeftArrow))
+                        {
+                            moveleft(player,ref px,ref py);
+                        }
+                        if (Keyboard.IsKeyPressed(Key.UpArrow))
+                        {
+                            moveup(player,ref px,ref py);
+                        }
+                        if (Keyboard.IsKeyPressed(Key.DownArrow))
+                        {
+                            movedown(player,ref px,ref py);
+                        }
+                        if (Keyboard.IsKeyPressed(Key.Space))
+                        {
+                            //to fire bullets of player
+                            char nextlocation = getCharatxy(px + 3, py);
+                            if (nextlocation != '%')
                             {
-                                Console.Clear();
-                                header();
-                                Console.WriteLine("Enter Your Book Name:");
-                                freeName = Console.ReadLine();
-                                Console.WriteLine("Enter Category(Science,History,Relegious or Literature):");
-                                freeCategory = Console.ReadLine();
-                                bool validCategory = categoryChecker(freeCategory);
-                                bool validName = isValidBookName(freeName);
-                                bool alreadyExists = isBookAlreadyExists(freeName);
-                                if (validCategory==true && validName==true && alreadyExists==true)
-                                {
-                                    authorFree[fbx] = name;
-                                    freeBookDetail(freeName, freeCategory);
-                                    saveFreeBooksDetail(name, freeName, freeCategory);
-                                    Console.WriteLine("Book added Successfully");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                } 
-                                else if (validName==false)
-                                {
-                                    Console.WriteLine("Invalid Book Name");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                }
-                                else if (alreadyExists==false)
-                                {
-                                    Console.WriteLine("Book Already Exists");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                }
-                                else if (validCategory == false)
-                                {
-                                    Console.WriteLine("Invalid Category");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                }
-                            }
-                            else if (authorOption==2)
-                            {
-                                Console.Clear();
-                                header();
-                                Console.WriteLine("Enter Your Book Name:");
-                                paidName = Console.ReadLine();
-                                Console.WriteLine("Enter Category(Science,History,Relegious or Literature):");
-                                paidCategory = Console.ReadLine();
-                                Console.WriteLine("Enter book price:");
-                                price = Console.ReadLine();
-                                bool validCategory = categoryChecker(paidCategory);
-                                bool validName = isValidBookName(paidName);
-                                bool alreadyExists = isBookAlreadyExists(paidName);
-                                bool validPrice = priceChecker(price);
-                                if (validCategory == true && validName == true && alreadyExists == true && validPrice==true)
-                                {
-                                    authorPaid[pbx] = name;
-                                    paidBookDetail(paidName, price, paidCategory);
-                                    savePaidBooksDetail(name, paidName, paidCategory, price);
-                                    Console.WriteLine("Book added Successfully");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                }
-                                else if (validName == false)
-                                {
-                                    Console.WriteLine("Invalid Book Name");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                }
-                                else if (alreadyExists == false)
-                                {
-                                    Console.WriteLine("Book Already Exists");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                }
-                                else if (validCategory == false)
-                                {
-                                    Console.WriteLine("Invalid Category");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                }
-                                else if (validPrice==false)
-                                {
-                                    Console.WriteLine("Invalid Price");
-                                    Console.Write("Press any key to Continue:");
-                                    Console.ReadKey();
-                                }
-
-
-                            }
-                            else if (authorOption==3)
-                            {
-                                Console.Clear();
-                                header();
-                                authorLibrary(name);
-                                Console.WriteLine("Press any key to continue:");
-                                Console.ReadKey();
-                            }
-                            else if (authorOption==4)
-                            {
-                                Console.Clear();
-                                header();
-                                Console.WriteLine("Enter the name of book:");
-                                string n = Console.ReadLine();
-                                Console.WriteLine("Enter the category of book:");
-                                string c = Console.ReadLine();
-                                bool isValid = deleteBooksChecker(name, n, c);
-                                if (isValid==true)
-                                {
-                                    deleteBook(name, n, c);
-                                    Console.WriteLine("Book was deleted successfully");
-                                    Console.ReadKey();
-                                }
-                                else if (isValid==false)
-                                {
-                                    Console.WriteLine("Book does not found");
-                                    Console.ReadKey();
-                                }
-                                
-                            }
-                            else if (authorOption==5)
-                            {
-                                Console.Clear();
-                                header();
-                                Console.WriteLine("Enter the name of the book you want to update:");
-                                string n = Console.ReadLine();
-                                bool exist = isExists(n);
-                                if (exist == true)
-                                {
-                                    Console.WriteLine("Enter the new price of the book:");
-                                    string newPrice = Console.ReadLine();
-                                    Console.WriteLine("Enter the new category of the book:");
-                                    string newCategory = Console.ReadLine();
-                                    bool validCategory = categoryChecker(newCategory);
-                                    bool validPrice = priceChecker(newPrice);
-                                    if (validCategory == true && validPrice==true)
-                                    {
-                                        updatePaid(newPrice,newCategory,name);
-                                        Console.WriteLine("Book was updated successfully");
-                                        Console.WriteLine("Press any key to continue");
-                                        Console.ReadKey();
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Invalid credentials");
-                                        Console.WriteLine("Press any key to continue:");
-                                        Console.ReadKey();
-                                    }
-
-                                }
-                                
-
+                                generateBullet(bulletX, bulletY, isBulletActive,ref px,ref py);
                             }
                         }
+                        // timer to slow down the vertical ghost
+                        if (timerV == 2)
+                        {
+                            //count varibles to remove ghost if health is 0
+                            if (count > 0)
+                            {
+                                moveVerticalGhost(verticalGhost,ref vgx,ref vgy);
+                      
+                                timerV = 0;
+                            }
+                            if (count <= 0)
+                            {
+                                removeVerticalGhost(ref vgx,ref vgy);
+                            }
+                        }
+                        if (count > 0)
+                        {
+                            if (timerB == 2)
+                            {
+                                generateBulletV(bulletVX, bulletVY, isBulletActiveVertical,ref vgx,ref vgy);
+                                timerB = 0;
+                            }
+                        }
+
+                        //calling functions to move bullets of enemy and player
+                        moveBulletV(bulletVX, bulletVY, isBulletActiveVertical);
+                        moveBullet(bulletX, bulletY, isBulletActive);
+                        //calling functions to detect bullet collision with enemy and player
+                        bulletCollisionWithVerticalEnemy(bulletX, bulletY, isBulletActive);
+
+
+                        timerV++;
+                        timerB++;
+                        System.Threading.Thread.Sleep(100);
+
+
                     }
-                    else if (rolechecker == "false")
+
+                }
+
+                //if options 3 to open key detail and instruction menu
+                if (option == 3)
+                {
+                    options();
+                    while (true)
                     {
-                        Console.WriteLine("Invalid Ceredentials! Try again");
-                        Console.WriteLine("Press any key to continue:");
-                        Console.ReadKey();
+                        Console.WriteLine("Enter your option:");
+                        keyoption = int.Parse(Console.ReadLine());
+                        if (keyoption == 1)
+                        {
+                            keysDetail();
+                            Console.WriteLine("Press any Key to continue:");
+                            Console.ReadKey();
+                            options();
+                        }
+                        if (keyoption == 2)
+                        {
+                            instruction();
+                            Console.WriteLine("Press any key to continue:");
+                            Console.ReadKey();
+                            options();
+                        }
+                        if (keyoption == 3)
+                        {
+                            Console.Clear();
+                            loginMenuHeader();
+                            Console.WriteLine("\n\n\n");
+                            menu();
+                            break;
+                        }
+                        else if (keyoption == 0 || keyoption > 3)
+                        {
+                            Console.WriteLine("INVALID OPTIONS");
+                            Console.WriteLine("Press any key to continue");
+                            Console.ReadKey();
+                            options();
+                        }
                     }
                 }
-                else if (option == 2)
+                //conditions to close the game
+                if (option == 4)
                 {
+                    return;
+                }
+                //condition to check invalid options
+                else if (option == 0 || option > 4)
+                {
+                    Console.WriteLine("INVALID OPTIONS");
+                    Console.WriteLine("Press any key to continue");
+                    Console.ReadKey();
                     Console.Clear();
-                    header();
-                    Console.WriteLine("SIGN-UP MENU");
-                    Console.WriteLine("-------------------");
-                    Console.WriteLine("Enter Your name:");
-                    name = Console.ReadLine();
-                    Console.WriteLine("Enter Your Password:");
-                    password = Console.ReadLine();
-                    Console.WriteLine("Enter Your Role(Reader or Author):");
-                    role = Console.ReadLine();
-                    bool isValid = isValidUserName(name);
-                    bool isExists = isUserAlreadyExists(name);
-                    bool isRole = isValidRole(role);
-                    if (isValid == true && isExists == true && isRole == true)
-                    {
-                        saveUsersData(name, password, role);
-                        signUp(name, password, role);
-                        Console.WriteLine("Signed Up Successfully");
-                        Console.WriteLine("Press any key to continue:");
-                        Console.ReadKey();
-                    }
-                    else if (isValid == false)
-                    {
-                        Console.WriteLine("Invalid credentials!");
-                        Console.WriteLine("Please don't use special character in name");
-                        Console.WriteLine("Press any key to continue");
-                        Console.ReadKey();
-                    }
-                    else if (isExists == false)
-                    {
-                        Console.WriteLine("User already exists!");
-                        Console.WriteLine("Press any key to continue");
-                        Console.ReadKey();
-                    }
-                    else if (isRole == false)
-                    {
-                        Console.WriteLine("Invalid Role!");
-                        Console.WriteLine("Press any key to continue");
-                        Console.ReadKey();
-                    }
+                    loginMenuHeader();
+                    Console.WriteLine("\n\n\n");
+                    menu();
                 }
-               
             }
-            Console.ReadKey();
+
         }
-        static void header()
+
+    
+        static void logo()
         {
-            Console.WriteLine("***********************************************************************");
-            Console.WriteLine("***********************************************************************");
-            Console.WriteLine("**   EEEEE     L         III BBBB  RRRR       A     RRRR  Y       Y  **");
-            Console.WriteLine("**   E         L          I  B   B R   R     A A    R   R   Y   Y    **");
-            Console.WriteLine("**   EEEEE --- L          I  BBB   RRR      A A A   RRR       Y      **");
-            Console.WriteLine("**   E         L          I  B   B R  R    A     A  R  R      Y      **");
-            Console.WriteLine("**   EEEEE     L L L L L III BBBB  R    R A       A R    R    Y      **");
-            Console.WriteLine("***********************************************************************");
-            Console.WriteLine("***********************************************************************");
+            Console.WriteLine("                                    .-==-=-.                    ");
+            Console.WriteLine("                                   -*==. :=*=                   ");
+            Console.WriteLine("                                   .#========#.                 ");
+            Console.WriteLine("                                   #+++==++*#                   ");
+            Console.WriteLine("                                   :##**=++*+----.              ");
+            Console.WriteLine("                                :---:.           .---.          ");
+            Console.WriteLine("                             .=-.                    :=         ");
+            Console.WriteLine("                            :=           ...::::-*@+. .+        ");
+            Console.WriteLine("                           .+  .%#*+======----*%@#+-=: --       ");
+            Console.WriteLine("                           =. :+++*@%#*......==+*:...:  +       ");
+            Console.WriteLine("                           =. :....%:..........-%.....: =.      ");
+            Console.WriteLine("                           -: :....#=:..........@%....- ::       " );
+            Console.WriteLine("                           .= :....=@+..........#@....- :=        ");
+            Console.WriteLine("                            * .:....@%..........+@-...- :-        ");
+            Console.WriteLine("                            =: -....#@:.........=@+..:: +.        ");
+            Console.WriteLine("                             +  :...=@+.........:*=::. --         ");
+            Console.WriteLine("                              +. .:::+-....:::::.....-+:          ");
+            Console.WriteLine("                               -=-...:::::.....:::-==:            ");
+            Console.WriteLine("                               .-+-:---======+++++*+-             ");
+            Console.WriteLine("                               *  .+==*#*+*###%==+=*:+.           ");
+            Console.WriteLine("                               .=- .==+##%%%%%%+===*%+.           ");
+            Console.WriteLine("                                 :*--:=*%%#**+++++++**-.          ");
+            Console.WriteLine("                                .*+=.  :=++++++++++++. *-         ");
+            Console.WriteLine("                                =*===-====*++++++++**-==*         ");
+            Console.WriteLine("                                :#*+++==++=-+*******+++*+         ");
+            Console.WriteLine("                                 :*#***##:   ##*=: =##*-          ");
+            Console.WriteLine("                                   :--+-   :=:+   =:             " );
+            Console.WriteLine("                                     -=   .+  *.  --             " );
+            Console.WriteLine("                                    :+    *   *.  --             " );
+            Console.WriteLine("                                    .*    +.   *.  --             ");
+            Console.WriteLine("                                   .*    -:   .+   =:             ");
+            Console.WriteLine("                                -+*++==::=    ++.:-+*+=-.         ");
+            Console.WriteLine("                              :*+=======++.  #*=========++=-      ");
+            Console.WriteLine("                             -#+====-::-==* +*+=========-::-*=    ");
+            Console.WriteLine("                             %+=====:..:=+# #*+=========:..:=++   ");
+            Console.WriteLine("                             #***+++++***#- -+****************.   ");
+            Console.WriteLine("                             ..:::::::..                         ");
         }
-        static int loginMenu()
+        static void loading()
         {
-            int choice=3;
-            Console.WriteLine("MAIN MENU");
+            Console.WriteLine("                                    LOADING");
+            for (int i = 0; i < 4; i++)
+            {
+                Console.WriteLine( ".");
+                System.Threading.Thread.Sleep(200);
+            }
+        }
+        static void loginMenuHeader()
+        {
+            Console.WriteLine(" _____  _              _____             ");
+            Console.WriteLine("|   __||_| ___  ___   |     | ___  ___   ");
+            Console.WriteLine("|   __|| ||  _|| -_|  | | | || .'||   |  ");
+            Console.WriteLine("|__|   |_||_|  |___|  |_|_|_||__,||_|_|  ");
+        }
+        static void menu()
+        {
+            Console.WriteLine("MENU");
             Console.WriteLine("----------------");
-            Console.WriteLine("1. Sign-In to E-Library");
-            Console.WriteLine("2. Sign-Up to E-Library");
-            Console.WriteLine("0. Exit");
-            Console.Write("Enter Your Choice:");
-            choice=int.Parse(Console.ReadLine());
-            return choice;
+            Console.WriteLine("1. New Game");
+            Console.WriteLine("2. Resume Game");
+            Console.WriteLine("3. Option");
+            Console.WriteLine("4. Exit");
         }
-        static void signUp(string name, string password, string role)
+        static void options()
         {
-            userName[userCount] = name;
-            userPasswords[userCount] = password;
-            userRole[userCount] = role;
-            userCount++;
+            Console.Clear();
+            loginMenuHeader();
+            Console.WriteLine("\n\n");
+            Console.WriteLine("OPTION MENU");
+            Console.WriteLine("-----------------");
+            Console.WriteLine("1. Keys");
+            Console.WriteLine("2. Instruction");
+            Console.WriteLine("3. Exit");
         }
-        static bool isUserAlreadyExists(string name)
+        static void keysDetail()
         {
-            bool flag = true;
-            for (int i = 0; i < userCount; i++)
-            {
-                if (name == userName[i])
-                {
-                    flag = false;
-                    break;
-                }
-            }
-            return flag;
+            Console.Clear();
+            loginMenuHeader();
+            Console.WriteLine("\n\n\n");
+            Console.WriteLine("KEYS DETAIL");
+            Console.WriteLine("-----------------");
+            Console.WriteLine("UP\t\tGo Up");
+            Console.WriteLine("DOWN\t\tGo Down");
+            Console.WriteLine("LEFT\t\tGo Left");
+            Console.WriteLine("RIGHT\t\tGo Right");
+            Console.WriteLine("D\t\tFire");
+            Console.WriteLine("ESCAPE\t\tExit Game");
         }
-        static bool isBookAlreadyExists(string name)
+        static void instruction()
         {
-            bool flag = true; 
-            for (int i=0;i<bookCount;i++)
-            {
-                if (name==bookNameFree[i] || name==bookNamePaid[i])
-                {
-                    flag = false;
-                    break;
-                }
-            }
-            return flag;
+            Console.Clear();
+            loginMenuHeader();
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("INSTRUCTIONS");
+            Console.WriteLine("------------------");
+            Console.WriteLine("Player will fire on right side by pressind 'D' key.");
+            Console.WriteLine("Score will add when bullet interact with enemy");
+            Console.WriteLine("Player health will decrease when enemy bullet collide with player");
+            Console.WriteLine("Player will die if it collide with follow ghost");
+            Console.WriteLine("Player will won the game if you score 50");
         }
-        static bool isValidUserName(string name)
+        static void printMaze()
         {
-            bool flag = true;
-            for (int i=0;i<name.Length;i++)
-            {
-                if ((name[i]<65 && name[i]>32) || (name[i]>90 && name[i]<97) || name[i]>122 || name[i]<32)
-                {
-                    flag = false;
-                }
-            }
-            return flag;
-        }
-        static bool isValidBookName(string name)
-        {
-            bool flag = true;
-            for (int i=0;i<name.Length;i++)
-            {
-                if ((name[i]<47 && name[i]>32 ) || (name[i]>90 && name[i]<97) || (name[i]>57 && name[i]<65) || name[i]>122 || name[i]<32)
-                {
-                    flag = false;
-                }
-            }
-            return flag;
-        }
-        static bool isValidRole(string role)
-        {
-            bool flag = false;
-            for (int i=0;i<role.Length;i++)
-            {
-                if (role=="reader" || role=="Reader" || role=="READER" || role=="Author" || role=="AUTHOR" || role=="author")
-                {
-                    flag = true;
-                }
-            }
-            return flag;
-        }
-        static bool priceChecker(string price)
-        {
-            bool flag = true;
-            for (int i = 0; i < price.Length; i++)
-            {
-                if (price[i] > 57 || price[i] < 49)
-                {
-                    flag = false;
-                }
-            }
-            return flag;
-        }
-        static void saveUsersData(string name,string password,string role)
-        {
-            string path = "D:\\OOP\\application\\userData.txt";
-            StreamWriter fileVariable = new StreamWriter(path,true);
-            fileVariable.WriteLine("{0},{1},{2}", name, password, role);
-            fileVariable.Flush();
-            fileVariable.Close();
-        }
-        static void saveFreeBooksDetail(string author,string book,string category)
-        {
-            string path = "D:\\OOP\\application\\freeBooks.txt";
-            StreamWriter fileVariable = new StreamWriter(path, true);
-            fileVariable.WriteLine("{0},{1},{2}", author, book, category);
-            fileVariable.Flush();
-            fileVariable.Close();
-        }
-        static void savePaidBooksDetail(string author,string book,string category,string price)
-        {
-            string path = "D:\\OOP\\application\\paidBooks.txt";
-            StreamWriter fileVariable = new StreamWriter(path, true);
-            fileVariable.WriteLine("{0},{1},{2},{3}", author, book, category,price);
-            fileVariable.Flush();
-            fileVariable.Close();
-        }
-        static void savePaidDetailDelete()
-        {
-            string path = "D:\\OOP\\application\\paidBooks.txt";
-            StreamWriter fileVariable = new StreamWriter(path, false);
-            for (int i=0;i<pbx-1;i++)
-            {
-                fileVariable.WriteLine("{0},{1},{2},{3}", authorPaid[i], bookNamePaid[i], bookCategoryPaid[i], bookPrice[i]);
-            }
             
-            fileVariable.Flush();
-            fileVariable.Close();
-        }
-        static void saveFreeDetailDelete()
-        {
-            string path = "D:\\OOP\\application\\freeBooks.txt";
-            StreamWriter fileVariable = new StreamWriter(path, false);
-            for (int i = 0; i < fbx - 1; i++)
+            for (int i = 0; i < array.GetLength(0); i++)
             {
-                fileVariable.WriteLine("{0},{1},{2}", authorFree[i], bookNameFree[i], bookCategoryFree[i]);
+                for (int j = 0; j < array.GetLength(1); j++)
+                {
+                    Console.Write( array[i, j]);
+                }
+                Console.WriteLine();
             }
 
-            fileVariable.Flush();
-            fileVariable.Close();
         }
-        static void readUserData()
+        static void printPlayer(char[,] player,ref int px,ref int py)
         {
-            string path = "D:\\OOP\\application\\userData.txt";
-            string record = "";
+            for (int i = 0; i < 3; i++)
+            {
+                gotoxy(px, py + i);
+                for (int j = 0; j < 3; j++)
+                {
+                    Console.Write("{0}",player[i,j]);
+                }
+                Console.WriteLine();
+            }
+        }
+        static void gotoxy(int x, int y)
+        {
+            Console.SetCursorPosition(x,y);
+        }
+        static void printVerticalGhost(char[,] verticalGhost,ref int vgx,ref int vgy)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                gotoxy(vgx, vgy + i);
+                for (int j = 0; j < 3; j++)
+                {
+                    Console.Write("{0}",verticalGhost[i,j]);
+                }
+                Console.WriteLine();
+            }
+        }
+        static void playerHealth()
+        {
+            gotoxy(80, 10);
+            Console.Write("PLAYER HEALTH:{0}",playerhealth);
+        }
+        static void printScore()
+        {
+            gotoxy(80, 8);
+            Console.Write("Score:{0}", score);
+        }
+        static void addScore()
+        {
+            score++;
+        }
+        static void verticalEnemyHealth()
+        {
+            gotoxy(80, 12);
+            Console.Write("Vertical Enemy Health:{0}",count);
+        }
+        static void moveright(char[,] player, ref int px,ref int py)
+        {
+            
+            if (array[py,px+3]==' ' && array[py+1,px+3]==' ' && array[py+2,px+3]==' ' )
+            {
+                
+                gotoxy(px, py);
+                removeplayer(ref px,ref py);
+                px = px + 1;
+                gotoxy(px, py);
+                printPlayer(player,ref px,ref py);
+            }
            
-            if (File.Exists(path))
-            {
-                StreamReader fileVariable = new StreamReader(path);
-                while((record=fileVariable.ReadLine())!=null)
-                {
-                    userName[userCount] = parseData(record, 1);
-                    userPasswords[userCount] = parseData(record, 2);
-                    userRole[userCount] = parseData(record, 3);
-                    userCount++;
-                }
-                fileVariable.Close();
-            }
-            else
-            {
-                Console.WriteLine("File does not exists");
-            }
         }
-        static void readFreeBooksDetail()
+        static void moveleft(char[,] player,ref int px,ref int py)
         {
-            string path = "D:\\OOP\\application\\freeBooks.txt";
-            string record = "";
-
-            if (File.Exists(path))
+           
+            if (array[py,px-1]==' ' && array[py+1,px-1]==' ' && array[py+2,px-1]==' ')
             {
-                StreamReader fileVariable = new StreamReader(path);
-                while ((record = fileVariable.ReadLine()) != null)
-                {
-                    authorFree[fbx] = parseData(record, 1);
-                    bookNameFree[fbx] = parseData(record, 2);
-                    bookCategoryFree[fbx] = parseData(record, 3);
-                    fbx++;
-                    bookCount++;
-                }
-                fileVariable.Close();
+                gotoxy(px, py);
+                removeplayer(ref px, ref py);
+                px = px - 1;
+                gotoxy(px, py);
+                printPlayer(player,ref px,ref py);
             }
-            else
-            {
-                Console.WriteLine("File does not exists");
-            }
-
+          
         }
-        static void readPaidBooksDetail()
+        static void moveup(char[,] player,ref int px,ref int py)
         {
-            string path = "D:\\OOP\\application\\paidBooks.txt";
-            string record = "";
-
-            if (File.Exists(path))
-            {
-                StreamReader fileVariable = new StreamReader(path);
-                while ((record = fileVariable.ReadLine()) != null)
-                {
-                    authorPaid[pbx] = parseData(record, 1);
-                    bookNamePaid[pbx] = parseData(record, 2);
-                    bookCategoryPaid[pbx] = parseData(record, 3);
-                    bookPrice[pbx] = int.Parse(parseData(record, 4));
-                    pbx++;
-                    bookCount++;
-                }
-                fileVariable.Close();
-            }
-            else
-            {
-                Console.WriteLine("File does not exists");
-            }
-        }
-        static string parseData(string words, int number)
-        {
-            int count = 1;
-            string line = "";
-            for (int i = 0; i < words.Length; i++)
-            {
-                if (words[i] == ',')
-                {
-                    count++;
-                }
-                else if (count == number)
-                {
-                    line = line + words[i];
-                }
-            }
-            return line;
-        }
-        static string signIn(string name, string Password)
-        {
-            string flag = "false";
-            for (int i = 0; i < userCount; i++)
-            {
-                if (name == userName[i] && Password == userPasswords[i])
-                {
-                    flag = userRole[i];
-                    break;
-                }
-            }
-            return flag;
-        }
-        static int authorMenu()
-        {
-            int choice;
-            Console.WriteLine("Author Menu");
-            Console.WriteLine("-------------------");
-            Console.WriteLine("1.To add free books");
-            Console.WriteLine("2.To add paid books");
-            Console.WriteLine("3.View my Books");
-            Console.WriteLine("4.To Delete Books");
-            Console.WriteLine("5.To Update price of books");
-            Console.WriteLine("0.Exit");
-            Console.Write("Enter Your Option:");
-            choice = int.Parse(Console.ReadLine());
-            return choice;
-        }
-        static bool categoryChecker(string category)
-        {
-            bool flag = false;
-            if (category == "Science" || category == "science" || category == "SCIENCE" || category == "history" ||
-             category == "HISTORY" || category == "History" || category == "literature" || category == "Literature"
-             || category == "LITERATURE" || category == "RELEGIOUS" || category == "Relegious" || category == "relegious")
-            {
-                flag = true;
-            }
-            return flag;
-        }
-        static void freeBookDetail(string name, string category)
-        {
-            bookNameFree[fbx] = name;
-            bookCategoryFree[fbx] = category;
-            fbx++;
-            bookCount++;
-        }
-        static void paidBookDetail(string name, string price, string category)
-        {
-            bookNamePaid[pbx] = name;
-            bookPrice[pbx] = int.Parse(price);
-            bookCategoryPaid[pbx] = category;
-            pbx++;
-            bookCount++;
-        }
-        static void authorLibrary(string name)
-        {
-            int count = 0;
-            Console.WriteLine("------My LIBRARY-----");
-            Console.WriteLine("   Book Name\t\tBook Price\t\tBook Category");
-            for (int i = 0; i < bookCount; i++)
-            {
-                if (name == authorPaid[i])
-                {
-                    Console.WriteLine("{0}.{1}\t\t{2}\t\t{3}",count+1,bookNamePaid[i],bookPrice[i],bookCategoryPaid[i]);
-                    count++;
-                }
-            }
-            for (int i = 0; i < bookCount; i++)
-            {
-                if (name == authorFree[i])
-                {
-                    Console.WriteLine("{0}.{1}\t\tFree\t\t{2}", count + 1, bookNameFree[i], bookCategoryFree[i]);
-                    count++;
-                }
-            }
-            if (count == 0)
-            {
-                Console.WriteLine("You did not add any book");
-                Console.WriteLine("Press any key to continue:");
-                Console.ReadKey();
-            }
-        }
-        static bool deleteBooksChecker(string name,string bookName,string bookCategory)
-        {
-            bool flag = false;
-            for (int i=0;i<pbx;i++)
-            {
-                if(name==authorPaid[i] && bookName==bookNamePaid[i] && bookCategory==bookCategoryPaid[i])
-                {
-                    flag = true;
-                    del = i;
-                    break;
-                }
-            }
-            for (int i=0;i<fbx;i++)
-            {
-                if (name==authorFree[i] && bookName==bookNameFree[i] && bookCategory==bookCategoryFree[i])
-                {
-                    flag = true;
-                    del1 = i;
-                    break;
-                }
-            }
-            return flag;
-        }
-        static void deleteBook(string name,string bookName,string bookCategory)
-        {
-            if (del != -1)
-            {
-                for (int i = del; i < pbx; i++)
-                {
-                    authorPaid[i] = authorPaid[i + 1];
-                    bookNamePaid[i] = bookNamePaid[i + 1];
-                    bookCategoryPaid[i] = bookCategoryPaid[i + 1];
-                    bookPrice[i] = bookPrice[i + 1];
-                }
-                savePaidDetailDelete();
-                pbx--;
-                bookCount--;
-            }
-            if (del1!=-1)
-            {
-                for (int i = del1; i < fbx; i++)
-                {
-                    authorFree[i] = authorFree[i + 1];
-                    bookNameFree[i] = bookNameFree[i + 1];
-                    bookCategoryFree[i] = bookCategoryFree[i + 1];
-                }
-                saveFreeDetailDelete();
-                fbx--;
-                bookCount--;
-            }   
-        }
-        static bool isExists(string name)
-        {
-            bool flag = false;
-            for (int i=0;i<pbx;i++)
-            {
-                if (name==bookNamePaid[i])
-                {
-                    flag = true;
-                    up = i;
-                    break;
-                }
-            }
-            for (int i=0;i<fbx;i++)
-            {
-                if (name==bookNameFree[i])
-                {
-                    flag = true;
-                    up1 = i;
-                    break;
-                }
-            }
-            return flag;
-        }
-        static void updatePaid(string newPrice,string newCategory,string name)
-        {
-            int price = int.Parse(newPrice);
-            if (up != -1)
-            {
-                if (price == 0)
-                {
-                    bookCategoryFree[fbx + 1] = newCategory;
-                }
-                else
-                {
-                    bookPrice[up] = price;
-                    bookCategoryPaid[up] = newCategory;
-                }
-            }
-            if (up1!=-1)
-            {
-                if (price>0)
-                {
-                    string free = bookNameFree[up1];
-                    string freeC = bookCategoryFree[up1];
-                    bool flag = deleteBooksChecker(name, free, freeC);
-                    deleteBook(name, free, freeC);
-                    bookNamePaid[pbx + 1] = bookNameFree[up1];
-                    bookCategoryPaid[pbx + 1] = newCategory;
-                    bookPrice[pbx + 1] = price;
-                    authorPaid[pbx + 1] = name;
-                    
-                }
-                else
-                {
-                    bookCategoryFree[up1] = newCategory;
-                }
-            }
             
+            if (array[py-1, px] == ' ' && array[py - 1, px + 1] == ' ' && array[py - 1, px + 2] == ' ')
+            {
+                gotoxy(px, py);
+                removeplayer(ref px,ref py);
+                py = py - 1;
+                gotoxy(px, py);
+                printPlayer(player,ref px,ref py);
+            }
+       
+        }
+        static void movedown(char[,] player,ref int px,ref int py)
+        {
+           
+            if (array[py+4, px] == ' ' && array[py + 3, px + 1] == ' ' && array[py + 3, px + 2] == ' ')
+            { 
+                gotoxy(px, py);
+                removeplayer(ref px, ref py);
+                py = py + 1;
+                gotoxy(px, py);
+                printPlayer(player, ref px, ref py);
+            }
+        }
+        static char getCharatxy(int x,int y)
+        {
+            Console.SetCursorPosition(x, y);
+            return Console.ReadKey().KeyChar;
+        }
+        static void removeplayer(ref int px,ref int py)
+        {
+            gotoxy(px, py);
+            Console.Write( "   ");
+            gotoxy(px, py + 1);
+            Console.Write("   ");
+            gotoxy(px, py + 2);
+            Console.Write("   ");
+        }
+        static void removeVerticalGhost(ref int vgx,ref int vgy)
+        {
+            gotoxy(vgx, vgy);
+            Console.Write("   ");
+            gotoxy(vgx, vgy + 1);
+            Console.Write("   ");
+            gotoxy(vgx, vgy + 2);
+            Console.Write("   ");
+        }
+        static void moveVerticalGhost(char[,] verticalGhost,ref int vgx,ref int vgy)
+        {
+            if (direction == "down")
+            {
+               
+                if (array[vgy + 3, vgx] == '%' || array[vgy + 3, vgy + 1] == '%' || array[vgy+3, vgx + 2] == '%' || array[vgy + 3, vgx] == '*' || array[vgy + 3, vgy + 1] == '*' || array[vgy + 3, vgx + 2] == '*')
+                {
+                    direction = "up";
+                }
+                else
+                {
+                    removeVerticalGhost(ref vgx,ref vgy);
+                    vgy = vgy + 1;
+                    printVerticalGhost(verticalGhost,ref vgx,ref vgy);
+                }
+            }
+            if (direction == "up")
+            {
+               
+                if ((array[vgy - 1, vgx] == '%' || array[vgy-1, vgx - 1] == '%' || array[vgy-1, vgx + 2] == '%') || (array[vgy - 1, vgx] == '*' || array[vgy - 1, vgx - 1] == '*' || array[vgy - 1, vgx + 2] == '*'))
+                {
+                    direction = "down";
+                }
+                else
+                {
+                    removeVerticalGhost(ref vgx,ref vgy);
+                    vgy = vgy - 1;
+                    printVerticalGhost(verticalGhost,ref vgx,ref vgy);
+                }
+            }
+        }
+        static void generateBullet(int[] bulletX, int[] bulletY, bool[] isBulletActive,ref int px,ref int py)
+        {
+            bulletX[bulletCount] = px + 3;
+            bulletY[bulletCount] = py + 1;
+            isBulletActive[bulletCount] = true;
+            gotoxy(px + 3, py + 1);
+            Console.Write( ">");
+            bulletCount++;
+        }
+        static void generateBulletV(int[] bulletVX, int[] bulletVY, bool[] isBulletActiveVertical,ref int vgx,ref int vgy)
+        {
+            bulletVX[bulletCountV] = vgx - 1;
+            bulletVY[bulletCountV] = vgy + 1;
+            isBulletActiveVertical[bulletCountV] = true;
+            gotoxy(vgx - 1, vgy + 1);
+            Console.Write(".");
+            bulletCountV++;
+        }
+        static void moveBulletV(int[] bulletVX, int[] bulletVY, bool[] isBulletActiveVertical)
+        {
+            char p =(char)148;
+            for (int i = 0; i < bulletCountV; i++)
+            {
+                if (isBulletActiveVertical[i] == true)
+                {
+                   // char nextlocation = getCharatxy(bulletVX[i] - 1, bulletVY[i]);
+                    //if (nextlocation == ' ')
+                    if (array[bulletVY[i],bulletVX[i]-1]==' ')
+                    {
+                        eraseBulletV(bulletVX[i], bulletVY[i]);
+                        bulletVX[i] = bulletVX[i] - 1;
+                        printBulletV(bulletVX[i], bulletVY[i]);
+                    }
+                    else if (array[bulletVY[i], bulletVX[i] - 1] == '%')
+                    {
+                        eraseBulletV(bulletVX[i], bulletVY[i]);
+                        makeBulletInactiveV(i, isBulletActiveVertical);
+                        if (array[bulletVY[i], bulletVX[i] - 1] == p || array[bulletVY[i], bulletVX[i] - 1] == ')' || array[bulletVY[i], bulletVX[i] - 1] == '\\')
+                        {
+                            playerhealth--;
+                        }
+                    }
+
+                }
+            }
+        }
+        static void eraseBulletV(int x, int y)
+        {
+            gotoxy(x, y);
+            Console.Write(" ");
+        }
+        static void printBulletV(int x, int y)
+        {
+            gotoxy(x, y);
+            Console.Write(".");
+        }
+        static void makeBulletInactiveV(int i, bool[] isBulletActiveVertical)
+        {
+            isBulletActiveVertical[i] = false;
+        }
+        static void moveBullet(int[] bulletX, int[] bulletY, bool[] isBulletActive)
+        {
+            for (int i = 0; i < 1000; i++)
+            {
+
+                if (isBulletActive[i] == true)
+                {
+                   // char nextlocation = getCharatxy(bulletX[i] + 1, bulletY[i]);
+                    if (array[bulletY[i],bulletX[i]+1] != ' ')
+                    {
+                        eraseBullet(bulletX[i], bulletY[i]);
+                        makeBulletInactive(i, isBulletActive);
+                        if (array[bulletY[i], bulletX[i] + 1] == '*')
+                        {
+                            Console.Write(" ");
+                            addScore();
+                        }
+                    }
+                    else
+                    {
+                        eraseBullet(bulletX[i], bulletY[i]);
+                        bulletX[i] = bulletX[i] + 1;
+                        printBullet(bulletX[i], bulletY[i]);
+                    }
+                }
+
+            }
+        }
+        static void makeBulletInactive(int i, bool[] isBulletActive)
+        {
+            isBulletActive[i] = false;
+        }
+        static void printBullet(int x, int y)
+        {
+            gotoxy(x, y);
+            Console.Write(">");
+        }
+        static void eraseBullet(int x, int y)
+        {
+            gotoxy(x, y);
+            Console.Write( " ");
+        }
+        static void bulletCollisionWithVerticalEnemy(int[] bulletX, int[] bulletY, bool[] isBulletActive)
+        {
+
+            for (int i = 0; i < bulletCount; i++)
+            {
+               // char next = getCharatxy(bulletX[i] + 1, bulletY[i]);
+                if (isBulletActive[i] == true)
+                {
+                    if (array[bulletY[i], bulletX[i] + 1] == '(' || array[bulletY[i], bulletX[i] + 1] == '@' || array[bulletY[i], bulletX[i] + 1] == '/')
+                    {
+                        addScore();
+                        count--;
+                        eraseBullet(bulletX[i], bulletY[i]);
+                        isBulletActive[i] = false;
+                    }
+                }
+            }
         }
     }
 }
